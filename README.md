@@ -7,7 +7,7 @@
 
 ## 發現問題
 
-- https://gitmind.com/app/docs/fa28hzj1 並沒有 if 判斷式
+- https://gitmind.com/app/docs/fa28hzj1 並沒有 if 判斷式表示式(是不需要嗎？)
 
 - 在 processSecurityAnalysisData 部份沒有顯示關於 queryActualELKData 流程 (查詢實際ELK資料（基於現有數據範圍）- 使用分批策略)
 
