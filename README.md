@@ -5,7 +5,7 @@
 
 --- 
 
-## 發現問題
+## 疑似問題
 
 - https://gitmind.com/app/docs/fa28hzj1 並沒有 if 判斷式表示式(給AI LAB的文件，不需要有IF條件的訊息嗎？)
 
@@ -13,8 +13,9 @@
 
 - 找不到 GET /cloudflare-logs/_search 觸發點
 
-- (第3030行：計算攻擊總數，攻擊判定邏輯) 這段應該要移至 在 (設定統計時間) 之後執行才對。![流程圖](./calculateSecurityStats-1.png)
+- (第3030行：計算攻擊總數，攻擊判定邏輯) 這段應該要移至 在 (設定統計時間) 後執行才對。![流程圖1](./calculateSecurityStats-1.png)
+
+- 「執行AI分析」的部份, 看圖片內容以為是平行處理，應該是依序觸發才對![流程圖2](./security-analysis-ai-1.png)
 
 ---
-
 
