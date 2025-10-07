@@ -17,5 +17,7 @@
 
 - 「執行AI分析」的部份, 看圖片內容以為是平行處理，應該是依序觸發才對![流程圖2](./security-analysis-ai-1.png)
 
+- 第3579行：優先使用自然語言分段解析 parseAnalysisFromMarkedText(text)，不論是 gemini 流程還是 ollama 流程，應該都會執行 parseAnalysisFromMarkedText(text)，流程圖文件劃的，感覺只有 ollama才會執行。![流程圖3](./security-analysis-ai-2.png)
+
 ---
 
