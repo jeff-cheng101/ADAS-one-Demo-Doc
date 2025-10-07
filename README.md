@@ -9,7 +9,7 @@
 
 - https://gitmind.com/app/docs/fa28hzj1 並沒有 if 判斷式表示式(給AI LAB的文件，不需要有IF條件的訊息嗎？)
 
-- 在 processSecurityAnalysisData 部份沒有顯示關於 queryActualELKData 流程 (查詢實際ELK資料（基於現有數據範圍）- 使用分批策略)
+- 在 processSecurityAnalysisData 部份，因為流程圖沒有顯示if判斷式，所以看到沒有顯示關於 queryActualELKData 流程 (查詢實際ELK資料（基於現有數據範圍）- 使用分批策略)
 
 - 找不到 GET /cloudflare-logs/_search 觸發點
 
