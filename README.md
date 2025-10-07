@@ -13,6 +13,7 @@
 
 - 找不到 GET /cloudflare-logs/_search 觸發點
 
+- (第3030行：計算攻擊總數，攻擊判定邏輯) 這段應該要移至 在 (設定統計時間) 之後執行才對。![流程圖](./calculateSecurityStats-1.png)
 
 ---
 
