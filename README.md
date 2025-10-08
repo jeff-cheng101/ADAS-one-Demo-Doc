@@ -2,6 +2,7 @@
 ## AI.Lab 10/09 要給FLOW文件給AI.LA
 - web http://10.168.10.102:3000
 - 核對 https://github.com/jeff-cheng101/ADAS-one-Demo web -> backend flow 與 https://gitmind.com/app/docs/fa28hzj1 內容是否一致
+- backend: /api/security-analysis-ai
 
 --- 
 
