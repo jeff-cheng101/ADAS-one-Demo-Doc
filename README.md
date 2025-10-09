@@ -22,3 +22,18 @@
 
 ---
 
+## 10/08 與 Peter 討論結果
+
+- 給 n8n 是 程緒圖(非流程圖)，所以可以不需要IF判斷式
+
+- 拿掉 Gemini 那段
+
+- 流程調整: (第3030行：計算攻擊總數，攻擊判定邏輯) 這段應該要移至 在 (設定統計時間) 後執行才對。
+
+- 流程調整: 「執行AI分析」的部份, 看圖片內容以為是平行處理，應該是依序觸發才對
+
+- 流程調整: 第3579行：優先使用自然語言分段解析 parseAnalysisFromMarkedText(text)，不論是 gemini 流程還是 ollama 流程，應該都會執行 parseAnalysisFromMarkedText(text)，流程圖文件劃的，感覺只有 ollama才會執行。
+
+- 取得 Gitmind 權限 (Amaris Kao), 已跟 Amaris Kao詢問權限事宜。
+
+---
