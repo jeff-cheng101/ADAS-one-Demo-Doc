@@ -12,3 +12,13 @@
 
 
 ---
+
+## 2025/11/03
+
+1. 登人LOGIN 交接 with 學姐
+   
+2. Dify研究(SSO，TOOL、MCP關係設計)
+
+3. prompt選單 UI/UX設計
+
+---
