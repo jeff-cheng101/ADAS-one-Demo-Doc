@@ -21,4 +21,6 @@
 
 3. prompt選單 UI/UX設計
 
+4. 決定 POST: /api/security-analysis-ai 拆出一個微服務，定期每分鐘trigger並將資料寫入redis中。(請Jessie研究規劃以Cloudflare為demo)
+
 ---
