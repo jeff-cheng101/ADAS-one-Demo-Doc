@@ -25,7 +25,7 @@
 |ZONE_ID|String|N|域名ID, 若沒帶參數，預設:15e2496da3b1ecfdb51f3ff011634cb2|
 |RULESET_ID|String|N|規則集, 若沒帶參數，預設: 92c8e0851be6450c9b09dbdcbbefd38e|
 |RULE_ID|String|Y|規則 ID, 必填|
-|CF_API_TOKEN|String|N|授權token, 預設POC:sLklkFners1nDznRpFYraPIzyDo-WhM8JGEs5vf9|
+|CF_API_TOKEN|String|N|cloudflare 授權token, 預設:sLklkFners1nDznRpFYraPIzyDo-WhM8JGEs5vf9|
 |ACTION|String|Y|動作, 黑名單：block, 白名單:skip|
 |IPlist|String|Y|IP清單, EXP: "1.1.1.1 2.2.2.2" 或 "1.1.1.1,2.2.2.2",不符IP格式會自動濾掉|
 |otherError|Number|N|自訂錯誤代碼, 若沒帶參數，預設:500|
