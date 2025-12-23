@@ -12,7 +12,7 @@
 
 |Attribute|Type|Required|Description|
 |---|---|---|---|
-|Authorization|String|N|值：Bearer app-7s1wJrXbAlq4EbQOwAYJxhtp (dify產出的api與api-key為1對1的關係)|
+|Authorization|String|Y|值：Bearer app-7s1wJrXbAlq4EbQOwAYJxhtp (dify產出的api與api-key為1對1的關係)|
 
 - 備註：dify 是用 api-key來對應呼叫那個api接口
 
