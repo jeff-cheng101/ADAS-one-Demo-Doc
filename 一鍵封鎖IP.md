@@ -22,11 +22,11 @@
 |---|---|---|---|
 |IPlist|String|Y|輸入分析報告內容|
 |response_mode|String|N|固定:blocking|
-|user|String|N|dify帳號, 固定:twister5@gmail.com|
+|user|String|Y|dify帳號, 固定:twister5@gmail.com|
 
 
 
-### Example ALL skip Parameter
+### Example Parameter
 ```json
 {
   "inputs": {
