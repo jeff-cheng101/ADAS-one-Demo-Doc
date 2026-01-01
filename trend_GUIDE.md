@@ -1425,7 +1425,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 	},
 	"dataVolume": {
 		"quantity": "450GB",
-		"change": -8.20
+		"change": 0.8
 	},
 	"pageView": {
 		"quantity": "124K",
