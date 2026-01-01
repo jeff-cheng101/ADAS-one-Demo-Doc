@@ -208,7 +208,7 @@ totalAttack.change = currentTotalAttack  的 count /  previousTotalAttack 的 co
 }
 ```
 
-httpVolume.quantity = 當期 currentHttpVolume Data 的 count
+httpVolume.quantity = 當期 currentHttpVolume Data 的 count 流量總數，轉換成字串。
 
 httpVolume.change =  當期 currentHttpVolume / 上期 previousHttpVolume (取到小數第二位)
 
@@ -478,7 +478,7 @@ lockdownRate.change = lockdownRate.quantity   / (previousLockdownRate / previous
 }
 ```
 
-dataVolume.quantity = 當期 currentData Data 的 currentData
+dataVolume.quantity = 當期 currentData Data 的 currentData 總數，初始單位byte，輸出可以 為KB、MB、GB 並轉換成字串。
 
 dataVolume.change = currentData  / previousData (取到小數第二位)
 
@@ -564,7 +564,7 @@ dataVolume.change = currentData  / previousData (取到小數第二位)
 }
 ```
 
-pageView.quantity = 當期 currentPageView Data 的 count
+pageView.quantity = 當期 currentPageView Data 的 count，初始單位為個數，輸出可以用K、M、G等單位來表示並轉換成字串。
 
 pageView.change = 當期 currentPageView / 上期 previousPageView (取到小數第二位)
 
@@ -650,7 +650,7 @@ pageView.change = 當期 currentPageView / 上期 previousPageView (取到小數
 }
 ```
 
-visits.quantity = currentVisits
+visits.quantity = currentVisits，初始單位為個數，輸出可以用K、M、G等單位來表示並轉換成字串。
 
 visits.change = currentVisits / previousVisits (取到小數第二位)
 
@@ -1185,7 +1185,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 
 | Attribute | Type   | Required | Description |
 | --------- | ------ | -------- | ----------- |
-| quantity  | String | Y        | 頁面瀏覽比例(點閱率)      |
+| quantity  | String | Y        | 頁面瀏覽次數（含單位）  |
 | change    | Number | Y        | 瀏覽比例變化(點閱率)      |
 
 ### visits fields
@@ -1424,11 +1424,11 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 		"change": 15.3
 	},
 	"dataVolume": {
-		"quantity": "450 GB",
+		"quantity": "450GB",
 		"change": -8.20
 	},
 	"pageView": {
-		"quantity": "85.3%",
+		"quantity": "124K",
 		"change": 3.5
 	},
 	"visits": {

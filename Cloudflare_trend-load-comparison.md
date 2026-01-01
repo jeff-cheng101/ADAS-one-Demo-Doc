@@ -94,7 +94,7 @@
 
 | Attribute | Type   | Required | Description |
 | --------- | ------ | -------- | ----------- |
-| quantity  | String | Y        | 頁面瀏覽比例(點閱率)      |
+| quantity  | String | Y        | 頁面瀏覽次數（含單位）    |
 | change    | Number | Y        | 瀏覽比例變化(點閱率)      |
                |
 
@@ -334,11 +334,11 @@
 		"change": 15.3
 	},
 	"dataVolume": {
-		"quantity": "450 GB",
+		"quantity": "450GB",
 		"change": -8.20
 	},
 	"pageView": {
-		"quantity": "85.3%",
+		"quantity": "124K",
 		"change": 3.5
 	},
 	"visits": {
