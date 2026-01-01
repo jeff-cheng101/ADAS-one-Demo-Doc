@@ -42,7 +42,7 @@
 
 ---
 
-### 當期 攻擊活動量: totalAttack
+### 當期 攻擊活動量: currentTotalAttack
 
 - esql 查詢條件
 
@@ -60,7 +60,7 @@
 }
 ```
 
-### 當期 totalAttack Data
+### 當期 currentTotalAttack Data
 
 ```json
 {
@@ -82,7 +82,7 @@
 }
 ```
 
-### 上期 攻擊活動量: totalAttack
+### 上期 攻擊活動量: previousTotalAttack
 
 - esql 查詢條件
 
@@ -100,7 +100,7 @@
 }
 ```
 
-### 上期 totalAttack Data
+### 上期 previousTotalAttack Data
 
 ```json
 {
@@ -122,29 +122,115 @@
 }
 ```
 
-totalAttack.quantity = 當期 totalAttack Data 的 count
+totalAttack.quantity = 當期 currentTotalAttack Data 的 count
 
-totalAttack.change = 上期 totalAttack.quantity  / 當期 totalAttack.quantity (取到小數第二位)
-
----
-
-### 當期 活動量佔比: httpPct
-
-- 攻擊流量佔比計算方式： 當期 攻擊活動量  (totalAttack) / 當期 HTTP 流量 (httpVolume)
-
-
-### 上期 活動量佔比: httpPct
-
-- 攻擊流量佔比計算方式： 上期 攻擊活動量  (totalAttack) / 上期 HTTP 流量 (httpVolume)
-
-
-httpPct.quantity = 當期 攻擊活動量  (totalAttack) / 當期 HTTP 流量 (httpVolume)
-
-httpPct.change = 上期 httpPct  / 當期 httpPct (取到小數第二位)
+totalAttack.change = currentTotalAttack  的 count /  previousTotalAttack 的 count (取到小數第二位)
 
 ---
 
-### 當期 封鎖率: lockdownRate
+### 當期 HTTP 活動量: currentHttpVolume
+
+- esql 查詢條件
+
+```json
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "esql",
+    "arguments": {
+      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS count = COUNT(*)"
+    }
+  }
+}
+```
+
+### 當期 currentHttpVolume Data
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "content": [
+            {
+                "type": "text",
+                "text": "Results"
+            },
+            {
+                "type": "text",
+                "text": "[{\"count\":1566556}]"
+            }
+        ],
+        "isError": false
+    }
+}
+```
+
+### 上期 HTTP 活動量: previousHttpVolume
+
+- esql 查詢條件
+
+```json
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "esql",
+    "arguments": {
+      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | STATS count = COUNT(*)"
+    }
+  }
+}
+```
+
+### 上期 previousHttpVolume Data
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "content": [
+            {
+                "type": "text",
+                "text": "Results"
+            },
+            {
+                "type": "text",
+                "text": "[{\"count\":1596252}]"
+            }
+        ],
+        "isError": false
+    }
+}
+```
+
+httpVolume.quantity = 當期 currentHttpVolume Data 的 count
+
+httpVolume.change =  當期 currentHttpVolume / 上期 previousHttpVolume (取到小數第二位)
+
+---
+
+### 當期 活動量佔比: currentHttpPct
+
+- 攻擊流量佔比計算方式： 當期 攻擊活動量  (currentTotalAttack) / 當期 HTTP 流量 (currentHttpVolume)
+
+
+### 上期 活動量佔比: previousHttpPct
+
+- 攻擊流量佔比計算方式： 上期 攻擊活動量  (previousTotalAttack) / 上期 HTTP 流量 (previousHttpVolume)
+
+
+httpPct.quantity = currentHttpPct
+
+httpPct.change = currentHttpPct / previousHttpPct (取到小數第二位)
+
+---
+
+### 當期 封鎖率: currentLockdownRate
 
 - esql 查詢條件
 
@@ -162,7 +248,7 @@ httpPct.change = 上期 httpPct  / 當期 httpPct (取到小數第二位)
 }
 ```
 
-### 當期 lockdownRate Data
+### 當期 currentLockdownRate Data
 
 ```json
 {
@@ -184,7 +270,7 @@ httpPct.change = 上期 httpPct  / 當期 httpPct (取到小數第二位)
 }
 ```
 
-### 上期 封鎖率: lockdownRate
+### 上期 封鎖率: previousLockdownRate
 
 - esql 查詢條件
 
@@ -202,7 +288,7 @@ httpPct.change = 上期 httpPct  / 當期 httpPct (取到小數第二位)
 }
 ```
 
-### 上期 lockdownRate Data
+### 上期 previousLockdownRate Data
 
 ```json
 {
@@ -224,9 +310,9 @@ httpPct.change = 上期 httpPct  / 當期 httpPct (取到小數第二位)
 }
 ```
 
-lockdownRate.quantity = 當期 lockdownRate Data 的 count /  當期 httpPct Data 的 count
+lockdownRate.quantity = 當期 currentLockdownRate Data 的 count /  當期 攻擊活動量 currentTotalAttack 的 count
 
-lockdownRate.change = 上期 lockdownRate.quantity  / 當期 lockdownRate.quantity (取到小數第二位)
+lockdownRate.change = lockdownRate.quantity   / (previousLockdownRate / previousTotalAttack) (取到小數第二位)
 
 ---
 
@@ -309,92 +395,6 @@ lockdownRate.change = 上期 lockdownRate.quantity  / 當期 lockdownRate.quanti
     }
 }
 ```
-
----
-
-### 當期 HTTP 活動量: httpVolume
-
-- esql 查詢條件
-
-```json
-{
-  "id": 1,
-  "jsonrpc": "2.0",
-  "method": "tools/call",
-  "params": {
-    "name": "esql",
-    "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS count = COUNT(*)"
-    }
-  }
-}
-```
-
-### 當期 httpVolume Data
-
-```json
-{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "result": {
-        "content": [
-            {
-                "type": "text",
-                "text": "Results"
-            },
-            {
-                "type": "text",
-                "text": "[{\"count\":1566556}]"
-            }
-        ],
-        "isError": false
-    }
-}
-```
-
-### 上期 HTTP 活動量: httpVolume
-
-- esql 查詢條件
-
-```json
-{
-  "id": 1,
-  "jsonrpc": "2.0",
-  "method": "tools/call",
-  "params": {
-    "name": "esql",
-    "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | STATS count = COUNT(*)"
-    }
-  }
-}
-```
-
-### 上期 httpVolume Data
-
-```json
-{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "result": {
-        "content": [
-            {
-                "type": "text",
-                "text": "Results"
-            },
-            {
-                "type": "text",
-                "text": "[{\"count\":1596252}]"
-            }
-        ],
-        "isError": false
-    }
-}
-```
-
-httpVolume.quantity = 當期 httpVolume Data 的 count
-
-httpVolume.change = 上期 httpVolume.quantity  / 當期 httpVolume.quantity (取到小數第二位)
 
 ---
 
@@ -484,7 +484,7 @@ dataVolume.change = currentData  / previousData (取到小數第二位)
 
 ---
 
-### 當期 點閱率: pageView
+### 當期 點閱率: currentPageView
 
 - esql 查詢條件
 
@@ -502,7 +502,7 @@ dataVolume.change = currentData  / previousData (取到小數第二位)
 }
 ```
 
-### 當期 pageView Data
+### 當期 currentPageView Data
 
 ```json
 {
@@ -524,7 +524,7 @@ dataVolume.change = currentData  / previousData (取到小數第二位)
 }
 ```
 
-### 上期 點閱率: pageView
+### 上期 點閱率: previousPageView
 
 - esql 查詢條件
 
@@ -542,7 +542,7 @@ dataVolume.change = currentData  / previousData (取到小數第二位)
 }
 ```
 
-### 上期 pageView Data
+### 上期 previousPageView Data
 
 ```json
 {
@@ -564,9 +564,9 @@ dataVolume.change = currentData  / previousData (取到小數第二位)
 }
 ```
 
-pageView.quantity = 當期 pageView Data 的 count
+pageView.quantity = 當期 currentPageView Data 的 count
 
-pageView.change = 上期 pageView.quantity  / 當期 pageView.quantity (取到小數第二位)
+pageView.change = 當期 currentPageView / 上期 previousPageView (取到小數第二位)
 
 ---
 
@@ -708,7 +708,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE ClientIP IN (\"193.41.206.36\",\"2a06:98c0:360d:481f:84ac:44b:f51c:3f9d\",\"2a06:98c0:360c:fed5:b9e:45e4:6630:fb6\",\"2a06:98c0:360d:6e8c:3ed:43a3:1223:87d0\",\"2a06:98c0:360c:19c0:a485:1915:f162:c962\") | STATS cnt = COUNT(*) BY ClientIP | SORT cnt DESC | LIMIT 5 | EVAL previousSourceIP = ClientIP | DROP ClientIP"
+      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE ClientIP IN (\"193.41.206.36\",\"2a06:98c0:360d:481f:84ac:44b:f51c:3f9d\",\"2a06:98c0:360c:fed5:b9e:45e4:6630:fb6\",\"2a06:98c0:360d:6e8c:3ed:43a3:1223:87d0\",\"2a06:98c0:360c:19c0:a485:1915:f162:c962\") | STATS cnt = COUNT(*) BY ClientIP | SORT cnt DESC | EVAL previousSourceIP = ClientIP | DROP ClientIP"
     }
   }
 }
@@ -741,7 +741,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 
 - sourceIP.ClientIP = currentSourceIP
 
-- ClientIP.change = previousSourceIP.cnt / currentSourceIP.cnt
+- 依 sourceIP.ClientIP 名稱 各別計算： ClientIP.change = previousSourceIP.cnt / currentSourceIP.cnt
 
 - ClientIP.cnt = currentSourceIP.cnt
 
@@ -832,7 +832,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 
 - triggerRule.SecurityRuleDescription = previousTriggerRule
 
-- triggerRule.change = previousTriggerRule.cnt / currentTriggerRule.cnt
+- 依 triggerRule.SecurityRuleDescription 名稱 各別計算： triggerRule.change = previousTriggerRule.cnt / currentTriggerRule.cnt
 
 - triggerRule.cnt = previousTriggerRule.cnt
 
@@ -923,7 +923,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 
 - Hosts.ClientRequestHost = previousHosts
 
-- Hosts.change = previousHosts.cnt / currentHosts.cnt
+- 依 Hosts.ClientRequestHost 名稱 各別計算： Hosts.change = previousHosts.cnt / currentHosts.cnt
 
 - Hosts.cnt = previousHosts.cnt
 
@@ -1014,7 +1014,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 
 - path.ClientRequestPath = previousPath
 
-- path.change = previousPath.cnt / currentPath.cnt
+- 依 path.ClientRequestPath 名稱 各別計算： path.change = previousPath.cnt / currentPath.cnt
 
 - path.cnt = previousPath.cnt
 
@@ -1105,7 +1105,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 
 - country.geoip.geo.country_name = previousCountry
 
-- country.change = previousCountry.cnt / currentCountry.cnt
+- 依 country.geoip.geo.country_name 名稱 各別計算： country.change = previousCountry.cnt / currentCountry.cnt
 
 - country.cnt = previousCountry.cnt
 
