@@ -39,6 +39,31 @@
 - 主機 (Top 5): hosts
 - 路徑 (Top 5): path
 - 國家 (Top 5): country
+- 預留欄位: other
+## 計算與格式化規則（最終版）
+
+### 時間窗推導（UTC）
+- 令 `duration` 為 `timeRange` 對應的秒數：`1h=3600`、`6h=21600`、`1d=86400`、`3d=259200`、`7d=604800`、`14d=1209600`、`30d=2592000`。
+- 令 `endTimeUtc` 為查詢當下時間（UTC）向下取整到小時（minute/second/millis = 0）的時間點。
+- 當期區間：`[endTimeUtc - duration, endTimeUtc)`。
+- 上期區間：`[endTimeUtc - 2*duration, endTimeUtc - duration)`。
+
+### 安全除法
+- `safe_div(a, b)`：若 `b = 0`，回傳 `0`；否則回傳 `a / b`。
+
+### 變化百分比 change（Number）
+- `pct_change(current, previous) = ((current - previous) / previous) * 100`。
+- 若 `previous = 0`：
+  - `current = 0`：回傳 `0`。
+  - `current ≠ 0`：回傳 `null`。
+- change 統一四捨五入到小數點後 2 位。
+
+### 單位格式化
+- `formatCount(n)`：輸出 `String`，採 1000 進位縮寫 `K/M/B`，小數最多 2 位並移除尾端 0（例：`982K`、`1.57M`）。
+- `formatBytes(nBytes)`：輸出 `String`，採 1024 進位 `B/KB/MB/GB/TB`，小數最多 2 位，值與單位間保留 1 個半形空白（例：`450 GB`）。
+- `formatPct(p)`：輸出 `String`，格式 `${round(p, 1)}%`（例：`8.4%`）。
+
+
 
 ---
 
@@ -124,7 +149,7 @@
 
 totalAttack.quantity = 當期 currentTotalAttack Data 的 count
 
-totalAttack.change = currentTotalAttack  的 count /  previousTotalAttack 的 count (取到小數第二位)
+totalAttack.change = pct_change(currentTotalAttack.count, previousTotalAttack.count)  // 四捨五入到小數點後 2 位
 
 ---
 
@@ -208,25 +233,25 @@ totalAttack.change = currentTotalAttack  的 count /  previousTotalAttack 的 co
 }
 ```
 
-httpVolume.quantity = 當期 currentHttpVolume Data 的 count 流量總數，轉換成字串。
+httpVolume.quantity = formatCount(currentHttpVolume.count)
 
-httpVolume.change =  當期 currentHttpVolume / 上期 previousHttpVolume (取到小數第二位)
+httpVolume.change = pct_change(currentHttpVolume.count, previousHttpVolume.count)  // 四捨五入到小數點後 2 位
 
 ---
 
 ### 當期 活動量佔比: currentHttpPct
 
-- 攻擊流量佔比計算方式： 當期 攻擊活動量  (currentTotalAttack) / 當期 HTTP 流量 (currentHttpVolume)
+- 攻擊流量佔比計算方式： `currentHttpPct = safe_div(currentTotalAttack.count, currentHttpVolume.count) * 100`（0~100 的百分比）
 
 
 ### 上期 活動量佔比: previousHttpPct
 
-- 攻擊流量佔比計算方式： 上期 攻擊活動量  (previousTotalAttack) / 上期 HTTP 流量 (previousHttpVolume)
+- 攻擊流量佔比計算方式： `previousHttpPct = safe_div(previousTotalAttack.count, previousHttpVolume.count) * 100`（0~100 的百分比）
 
 
-httpPct.quantity = currentHttpPct
+httpPct.quantity = round(safe_div(currentTotalAttack.count, currentHttpVolume.count) * 100, 1)  // 0~100 的百分比
 
-httpPct.change = currentHttpPct / previousHttpPct (取到小數第二位)
+httpPct.change = pct_change(currentHttpPct, previousHttpPct)  // 四捨五入到小數點後 2 位；currentHttpPct/previousHttpPct 皆為百分比數值
 
 ---
 
@@ -310,9 +335,11 @@ httpPct.change = currentHttpPct / previousHttpPct (取到小數第二位)
 }
 ```
 
-lockdownRate.quantity = 當期 currentLockdownRate Data 的 count /  當期 攻擊活動量 currentTotalAttack 的 count
+lockdownRate.quantity = round(safe_div(currentLockdownRate.count, currentTotalAttack.count) * 100, 1)  // 0~100 的百分比
 
-lockdownRate.change = lockdownRate.quantity   / (previousLockdownRate / previousTotalAttack) (取到小數第二位)
+previousLockdownRatePct = round(safe_div(previousLockdownRate.count, previousTotalAttack.count) * 100, 1)
+
+lockdownRate.change = pct_change(lockdownRate.quantity, previousLockdownRatePct)  // 四捨五入到小數點後 2 位
 
 ---
 
@@ -478,9 +505,9 @@ lockdownRate.change = lockdownRate.quantity   / (previousLockdownRate / previous
 }
 ```
 
-dataVolume.quantity = 當期 currentData Data 的 currentData 總數，初始單位byte，輸出可以 為KB、MB、GB 並轉換成字串。
+dataVolume.quantity = formatBytes(currentData)
 
-dataVolume.change = currentData  / previousData (取到小數第二位)
+dataVolume.change = pct_change(currentData, previousData)  // 四捨五入到小數點後 2 位
 
 ---
 
@@ -564,9 +591,12 @@ dataVolume.change = currentData  / previousData (取到小數第二位)
 }
 ```
 
-pageView.quantity = 當期 currentPageView Data 的 count，初始單位為個數，輸出可以用K、M、G等單位來表示並轉換成字串。
+currentPageViewPct = safe_div(currentPageView.count, currentHttpVolume.count) * 100
+previousPageViewPct = safe_div(previousPageView.count, previousHttpVolume.count) * 100
 
-pageView.change = 當期 currentPageView / 上期 previousPageView (取到小數第二位)
+pageView.quantity = formatPct(safe_div(currentPageView.count, currentHttpVolume.count) * 100)  // 0~100 的百分比字串
+
+pageView.change = pct_change(currentPageViewPct, previousPageViewPct)  // 四捨五入到小數點後 2 位；Pct 為百分比數值
 
 ---
 
@@ -610,7 +640,7 @@ pageView.change = 當期 currentPageView / 上期 previousPageView (取到小數
 }
 ```
 
-### 當期 造訪次數: previousVisits
+### 上期 造訪次數: previousVisits
 
 - esql 查詢條件
 
@@ -650,9 +680,9 @@ pageView.change = 當期 currentPageView / 上期 previousPageView (取到小數
 }
 ```
 
-visits.quantity = currentVisits，初始單位為個數，輸出可以用K、M、G等單位來表示並轉換成字串。
+visits.quantity = formatCount(currentVisits)
 
-visits.change = currentVisits / previousVisits (取到小數第二位)
+visits.change = pct_change(currentVisits, previousVisits)  // 四捨五入到小數點後 2 位
 
 ---
 
@@ -696,7 +726,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 }
 ```
 
-### 上期 造訪次數: previousSourceIP
+### 上期 來源 IP 位址 (Top 5): previousSourceIP
 
 - esql 查詢條件
 
@@ -741,7 +771,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 
 - sourceIP.ClientIP = currentSourceIP
 
-- 依 sourceIP.ClientIP 名稱 各別計算： ClientIP.change = previousSourceIP.cnt / currentSourceIP.cnt
+- 依 sourceIP.ClientIP 名稱 各別計算： ClientIP.change = pct_change(currentSourceIP.cnt, previousSourceIP.cnt)
 
 - ClientIP.cnt = currentSourceIP.cnt
 
@@ -787,7 +817,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 }
 ```
 
-### 上期 造訪次數: previousTriggerRule
+### 上期 觸發規則 (Top 5): previousTriggerRule
 
 - esql 查詢條件
 
@@ -832,9 +862,9 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 
 - triggerRule.SecurityRuleDescription = previousTriggerRule
 
-- 依 triggerRule.SecurityRuleDescription 名稱 各別計算： triggerRule.change = previousTriggerRule.cnt / currentTriggerRule.cnt
+- 依 triggerRule.SecurityRuleDescription 名稱 各別計算： triggerRule.change = pct_change(currentTriggerRule.cnt, previousTriggerRule.cnt)
 
-- triggerRule.cnt = previousTriggerRule.cnt
+- triggerRule.cnt = currentTriggerRule.cnt
 
 ---
 
@@ -878,7 +908,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 }
 ```
 
-### 上期 造訪次數: previousHosts
+### 上期 主機 (Top 5): previousHosts
 
 - esql 查詢條件
 
@@ -923,9 +953,9 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 
 - Hosts.ClientRequestHost = previousHosts
 
-- 依 Hosts.ClientRequestHost 名稱 各別計算： Hosts.change = previousHosts.cnt / currentHosts.cnt
+- 依 Hosts.ClientRequestHost 名稱 各別計算： Hosts.change = pct_change(currentHosts.cnt, previousHosts.cnt)
 
-- Hosts.cnt = previousHosts.cnt
+- Hosts.cnt = currentHosts.cnt
 
 ---
 
@@ -969,7 +999,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 }
 ```
 
-### 上期 造訪次數: previousPath
+### 上期 路徑 (Top 5): previousPath
 
 - esql 查詢條件
 
@@ -1014,9 +1044,9 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 
 - path.ClientRequestPath = previousPath
 
-- 依 path.ClientRequestPath 名稱 各別計算： path.change = previousPath.cnt / currentPath.cnt
+- 依 path.ClientRequestPath 名稱 各別計算： path.change = pct_change(currentPath.cnt, previousPath.cnt)
 
-- path.cnt = previousPath.cnt
+- path.cnt = currentPath.cnt
 
 ---
 
@@ -1060,7 +1090,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 }
 ```
 
-### 上期 造訪次數: previousCountry
+### 上期 國家 (Top 5): previousCountry
 
 - esql 查詢條件
 
@@ -1105,13 +1135,13 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 
 - country.geoip.geo.country_name = previousCountry
 
-- 依 country.geoip.geo.country_name 名稱 各別計算： country.change = previousCountry.cnt / currentCountry.cnt
+- 依 country.geoip.geo.country_name 名稱 各別計算： country.change = pct_change(currentCountry.cnt, previousCountry.cnt)
 
-- country.cnt = previousCountry.cnt
+- country.cnt = currentCountry.cnt
 
 ---
 
-## Response data smaple
+## Response data sample
 
 ### Response fields
 
@@ -1132,29 +1162,29 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 | hosts               | Array<Object> | Y        | 受攻擊主機（Host）統計 |
 | path                | Array<Object> | Y        | 請求路徑統計        |
 | country             | Array<Object> | Y        | 來源國家統計        |
-| other               | Object        | Y        | 預留欄位，未定義內容    |
+| other               | Object        | N        | 預留欄位（可為空物件 `{}`） |
 
 ### totalAttack fields
 
 | Attribute | Type   | Required | Description   |
 | --------- | ------ | -------- | ------------- |
 | quantity  | Number | Y        | 總攻擊次數         |
-| change    | Number | Y        | 與前一期間相比的變化(百分比) |
+| change    | Number (nullable) | Y        | 與前一期間相比的變化(百分比) |
 
 ### httpPct fields
 
 | Attribute | Type   | Required | Description    |
 | --------- | ------ | -------- | -------------- |
-| quantity  | Number | Y        | 活動量佔比 |
-| change    | Number | Y        | 活動量佔比變化 (百分比)      |
+| quantity  | Number | Y        | 活動量佔比（0~100 的百分比） |
+| change    | Number (nullable) | Y        | 活動量佔比變化 (百分比)      |
 
 
 ### lockdownRate fields
 
 | Attribute | Type   | Required | Description |
 | --------- | ------ | -------- | ----------- |
-| quantity  | Number | Y        | 封鎖率  |
-| change    | Number | Y        | 封鎖率變化(百分比)     |
+| quantity  | Number | Y        | 封鎖率（0~100 的百分比） |
+| change    | Number (nullable) | Y        | 封鎖率變化(百分比)     |
 
 
 ### currentAttackTrend(當期) / previousAttackTrend(上期) item fields
@@ -1170,7 +1200,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 | Attribute | Type   | Required | Description    |
 | --------- | ------ | -------- | -------------- |
 | quantity  | String | Y        | HTTP 流量數量（含單位） |
-| change    | Number | Y        | HTTP 流量變化百分比   |
+| change    | Number (nullable) | Y        | HTTP 流量變化百分比   |
 
 
 ### dataVolume fields
@@ -1178,22 +1208,22 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 | Attribute | Type   | Required | Description |
 | --------- | ------ | -------- | ----------- |
 | quantity  | String | Y        | 資料傳輸量（含單位）  |
-| change    | Number | Y        | 資料量變化百分比    |
+| change    | Number (nullable) | Y        | 資料量變化百分比    |
 
 
 ### pageView fields
 
 | Attribute | Type   | Required | Description |
 | --------- | ------ | -------- | ----------- |
-| quantity  | String | Y        | 頁面瀏覽次數（含單位）  |
-| change    | Number | Y        | 瀏覽比例變化(點閱率)      |
+| quantity  | String | Y        | 頁面瀏覽比例(點閱率)      |
+| change    | Number (nullable) | Y        | 與前一期間相比的變化(百分比) |
 
 ### visits fields
 
 | Attribute | Type   | Required | Description |
 | --------- | ------ | -------- | ----------- |
 | quantity  | String | Y        | 訪問次數（含單位）   |
-| change    | Number | Y        | 訪問次數變化      |
+| change    | Number (nullable) | Y        | 與前一期間相比的變化(百分比) |
 
 
 ### sourceIP item fields
@@ -1202,7 +1232,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 | --------- | ------ | -------- | --------------------- |
 | ClientIP  | String | Y        | 來源 IP 位址（IPv4 或 IPv6） |
 | cnt       | Number | Y        | 該 IP 的請求次數            |
-| change    | Number | Y        | 與前一期間相比的變化            |
+| change    | Number (nullable) | Y        | 與前一期間相比的變化(百分比)       |
 
 
 ### triggerRule item fields
@@ -1211,7 +1241,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 | ----------------------- | ------ | -------- | ----------- |
 | SecurityRuleDescription | String | Y        | 觸發該規則描述      |
 | cnt                     | Number | Y        | 觸發該規則的次數    |
-| change                  | Number | Y        | 觸發次數變化      |
+| change    | Number (nullable) | Y        | 觸發次數變化      |
 
 
 ### hosts item fields
@@ -1220,7 +1250,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 | ----------------- | ------ | -------- | ------------ |
 | ClientRequestHost | String | Y        | 請求的 Host 名稱  |
 | cnt               | Number | Y        | 該 Host 的請求次數 |
-| change            | Number | Y        | 請求次數變化       |
+| change    | Number (nullable) | Y        | 請求次數變化       |
 
 
 ###　path item fields
@@ -1229,7 +1259,7 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 | ----------------- | ------ | -------- | ----------- |
 | ClientRequestPath | String | Y        | 請求路徑        |
 | cnt               | Number | Y        | 該路徑的請求次數    |
-| change            | Number | Y        | 請求次數變化      |
+| change    | Number (nullable) | Y        | 請求次數變化      |
 
 ### scountry item fields
 
@@ -1237,9 +1267,9 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 | ---------------------- | ------ | -------- | ----------- |
 | geoip.geo.country_name | String | Y        | 來源國家名稱      |
 | cnt                    | Number | Y        | 該國家的請求次數    |
-| change                 | Number | Y        | 請求次數變化      |
+| change    | Number (nullable) | Y        | 請求次數變化      |
 
-### Example Response
+### Example Response（格式示例；數值不對應上方各段落的查詢範例輸出）
 ```json
 {
 	"success": true,
@@ -1424,11 +1454,11 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 		"change": 15.3
 	},
 	"dataVolume": {
-		"quantity": "450GB",
-		"change": 0.8
+		"quantity": "450 GB",
+		"change": -8.20
 	},
 	"pageView": {
-		"quantity": "124K",
+		"quantity": "85.3%",
 		"change": 3.5
 	},
 	"visits": {
@@ -1573,4 +1603,3 @@ visits.change = currentVisits / previousVisits (取到小數第二位)
 	"other": {}
 }
 ```
-
