@@ -84,7 +84,7 @@
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" AND SecurityAction.keyword IN (\"jschallenge\", \"block\", \"managedChallenge\") | STATS count = COUNT(*)"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" AND SecurityAction.keyword IN (\"jschallenge\", \"block\", \"managedChallenge\") | STATS count = COUNT(*)"
     }
   }
 }
@@ -124,7 +124,7 @@
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" AND SecurityAction.keyword IN (\"jschallenge\", \"block\", \"managedChallenge\") | STATS count = COUNT(*)"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" AND SecurityAction.keyword IN (\"jschallenge\", \"block\", \"managedChallenge\") | STATS count = COUNT(*)"
     }
   }
 }
@@ -170,7 +170,7 @@ totalAttack.change = pctChange(currentTotalAttack.count, previousTotalAttack.cou
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS count = COUNT(*)"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS count = COUNT(*)"
     }
   }
 }
@@ -210,7 +210,7 @@ totalAttack.change = pctChange(currentTotalAttack.count, previousTotalAttack.cou
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | STATS count = COUNT(*)"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | STATS count = COUNT(*)"
     }
   }
 }
@@ -276,7 +276,7 @@ httpPct.change = pctChange(currentHttpPctPct, previousHttpPctPct)（百分比變
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" AND SecurityAction.keyword IN ( \"block\") | STATS count = COUNT(*)"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" AND SecurityAction.keyword IN ( \"block\") | STATS count = COUNT(*)"
     }
   }
 }
@@ -316,7 +316,7 @@ httpPct.change = pctChange(currentHttpPctPct, previousHttpPctPct)（百分比變
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" AND SecurityAction.keyword IN ( \"block\") | STATS count = COUNT(*)"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" AND SecurityAction.keyword IN ( \"block\") | STATS count = COUNT(*)"
     }
   }
 }
@@ -362,7 +362,7 @@ lockdownRate.change = pctChange(lockdownRate.quantity, ratioPct(previousLockdown
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | WHERE SecurityAction.keyword IN (\"jschallenge\", \"block\", \"managedChallenge\") | EVAL hour = DATE_TRUNC(1 hour, @timestamp) | STATS count = COUNT(*) BY hour | SORT hour ASC | KEEP hour, count "
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | WHERE SecurityAction.keyword IN (\"jschallenge\", \"block\", \"managedChallenge\") | EVAL hour = DATE_TRUNC(1 hour, @timestamp) | STATS count = COUNT(*) BY hour | SORT hour ASC | KEEP hour, count "
     }
   }
 }
@@ -402,7 +402,7 @@ lockdownRate.change = pctChange(lockdownRate.quantity, ratioPct(previousLockdown
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE SecurityAction.keyword IN (\"jschallenge\", \"block\", \"managedChallenge\") | EVAL hour = DATE_TRUNC(1 hour, @timestamp) | STATS count = COUNT(*) BY hour | SORT hour ASC | KEEP hour, count "
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE SecurityAction.keyword IN (\"jschallenge\", \"block\", \"managedChallenge\") | EVAL hour = DATE_TRUNC(1 hour, @timestamp) | STATS count = COUNT(*) BY hour | SORT hour ASC | KEEP hour, count "
     }
   }
 }
@@ -444,7 +444,7 @@ lockdownRate.change = pctChange(lockdownRate.quantity, ratioPct(previousLockdown
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS currentData = SUM(EdgeResponseBytes)"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS currentData = SUM(EdgeResponseBytes)"
     }
   }
 }
@@ -484,7 +484,7 @@ lockdownRate.change = pctChange(lockdownRate.quantity, ratioPct(previousLockdown
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | STATS previousData = SUM(EdgeResponseBytes)"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | STATS previousData = SUM(EdgeResponseBytes)"
     }
   }
 }
@@ -530,7 +530,7 @@ dataVolume.change = pctChange(currentData, previousData)（百分比變化，取
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" AND EdgeResponseContentType IN (\"text/html\") | STATS count = COUNT(*)"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" AND EdgeResponseContentType IN (\"text/html\") | STATS count = COUNT(*)"
     }
   }
 }
@@ -570,7 +570,7 @@ dataVolume.change = pctChange(currentData, previousData)（百分比變化，取
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" AND EdgeResponseContentType IN (\"text/html\") | STATS count = COUNT(*)"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" AND EdgeResponseContentType IN (\"text/html\") | STATS count = COUNT(*)"
     }
   }
 }
@@ -616,7 +616,7 @@ pageView.change = pctChange(currentPageView.count, previousPageView.count)（百
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" AND ClientRequestReferer.keyword IN (\"None\") | STATS currentVisits = COUNT(*)"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" AND ClientRequestReferer.keyword IN (\"None\") | STATS currentVisits = COUNT(*)"
     }
   }
 }
@@ -656,7 +656,7 @@ pageView.change = pctChange(currentPageView.count, previousPageView.count)（百
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" AND ClientRequestReferer.keyword IN (\"None\") | STATS previousVisits = COUNT(*)"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" AND ClientRequestReferer.keyword IN (\"None\") | STATS previousVisits = COUNT(*)"
     }
   }
 }
@@ -702,7 +702,7 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS cnt = count(*) BY ClientIP | SORT cnt DESC | EVAL currentSourceIP = ClientIP| DROP ClientIP |LIMIT 5"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS cnt = count(*) BY ClientIP | SORT cnt DESC | EVAL currentSourceIP = ClientIP| DROP ClientIP |LIMIT 5"
     }
   }
 }
@@ -742,7 +742,7 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE ClientIP IN (\"193.41.206.36\",\"2a06:98c0:360d:481f:84ac:44b:f51c:3f9d\",\"2a06:98c0:360c:fed5:b9e:45e4:6630:fb6\",\"2a06:98c0:360d:6e8c:3ed:43a3:1223:87d0\",\"2a06:98c0:360c:19c0:a485:1915:f162:c962\") | STATS cnt = COUNT(*) BY ClientIP | SORT cnt DESC | EVAL previousSourceIP = ClientIP | DROP ClientIP"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE ClientIP IN (\"193.41.206.36\",\"2a06:98c0:360d:481f:84ac:44b:f51c:3f9d\",\"2a06:98c0:360c:fed5:b9e:45e4:6630:fb6\",\"2a06:98c0:360d:6e8c:3ed:43a3:1223:87d0\",\"2a06:98c0:360c:19c0:a485:1915:f162:c962\") | STATS cnt = COUNT(*) BY ClientIP | SORT cnt DESC | EVAL previousSourceIP = ClientIP | DROP ClientIP"
     }
   }
 }
@@ -793,7 +793,7 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS cnt = count(*) BY SecurityRuleDescription | SORT cnt DESC | EVAL currentTriggerRule = SecurityRuleDescription| DROP SecurityRuleDescription |LIMIT 5"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS cnt = count(*) BY SecurityRuleDescription | SORT cnt DESC | EVAL currentTriggerRule = SecurityRuleDescription| DROP SecurityRuleDescription |LIMIT 5"
     }
   }
 }
@@ -833,7 +833,7 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE SecurityRuleDescription IN (\"log\",\"\",\"Version Control - Information Disclosure\",\"erp\",\"no response when not in 80_443 port\") | STATS cnt = COUNT(*) BY SecurityRuleDescription | SORT cnt DESC | LIMIT 5 | EVAL previousTriggerRule = SecurityRuleDescription | DROP SecurityRuleDescription"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE SecurityRuleDescription IN (\"log\",\"\",\"Version Control - Information Disclosure\",\"erp\",\"no response when not in 80_443 port\") | STATS cnt = COUNT(*) BY SecurityRuleDescription | SORT cnt DESC | LIMIT 5 | EVAL previousTriggerRule = SecurityRuleDescription | DROP SecurityRuleDescription"
     }
   }
 }
@@ -884,7 +884,7 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS cnt = count(*) BY ClientRequestHost | SORT cnt DESC | EVAL currentHosts = ClientRequestHost| DROP ClientRequestHost |LIMIT 5"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS cnt = count(*) BY ClientRequestHost | SORT cnt DESC | EVAL currentHosts = ClientRequestHost| DROP ClientRequestHost |LIMIT 5"
     }
   }
 }
@@ -924,7 +924,7 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE ClientRequestHost IN (\"logstash-test.twister5.cf\",\"bde-70.twister5.cf\",\"nginx.twister5.cf\",\"aaaa.twister5.cf\",\"ipfs.twister5.cf\") | STATS cnt = COUNT(*) BY ClientRequestHost | SORT cnt DESC | LIMIT 5 | EVAL previousHosts = ClientRequestHost | DROP ClientRequestHost"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE ClientRequestHost IN (\"logstash-test.twister5.cf\",\"bde-70.twister5.cf\",\"nginx.twister5.cf\",\"aaaa.twister5.cf\",\"ipfs.twister5.cf\") | STATS cnt = COUNT(*) BY ClientRequestHost | SORT cnt DESC | LIMIT 5 | EVAL previousHosts = ClientRequestHost | DROP ClientRequestHost"
     }
   }
 }
@@ -975,7 +975,7 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS cnt = count(*) BY ClientRequestPath | SORT cnt DESC | EVAL currentPath = ClientRequestPath| DROP ClientRequestPath |LIMIT 5"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS cnt = count(*) BY ClientRequestPath | SORT cnt DESC | EVAL currentPath = ClientRequestPath| DROP ClientRequestPath |LIMIT 5"
     }
   }
 }
@@ -1015,7 +1015,7 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE ClientRequestPath IN (\"/\",\"/favicon.ico\",\"/cdn-cgi/challenge-platform/scripts/jsd/main.js\",\"/.env\",\"/.git/config\") | STATS cnt = COUNT(*) BY ClientRequestPath | SORT cnt DESC | LIMIT 5 | EVAL previousPath = ClientRequestPath | DROP ClientRequestPath"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE ClientRequestPath IN (\"/\",\"/favicon.ico\",\"/cdn-cgi/challenge-platform/scripts/jsd/main.js\",\"/.env\",\"/.git/config\") | STATS cnt = COUNT(*) BY ClientRequestPath | SORT cnt DESC | LIMIT 5 | EVAL previousPath = ClientRequestPath | DROP ClientRequestPath"
     }
   }
 }
@@ -1066,7 +1066,7 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS cnt = count(*) BY geoip.geo.country_name | SORT cnt DESC | EVAL currentCountry = geoip.geo.country_name| DROP geoip.geo.country_name |LIMIT 5"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-30T00:00:00.000Z\" AND @timestamp <= \"2025-12-31T00:00:00.000Z\" | STATS cnt = count(*) BY geoip_client.country_name | SORT cnt DESC | EVAL currentCountry = geoip_client.country_name| DROP geoip_client.country_name |LIMIT 5"
     }
   }
 }
@@ -1106,7 +1106,7 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
   "params": {
     "name": "esql",
     "arguments": {
-      "query": "FROM adasone-cf-*,across-cf-logpush-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE geoip.geo.country_name IN (\"Taiwan\",\"United States\",\"Hong Kong\",\"The Netherlands\",\"France\") | STATS cnt = COUNT(*) BY geoip.geo.country_name | SORT cnt DESC | LIMIT 5 | EVAL previousCountry = geoip.geo.country_name | DROP geoip.geo.country_name"
+      "query": "FROM adasone-cf-*,across-cf-* | WHERE @timestamp >= \"2025-12-29T00:00:00.000Z\" AND @timestamp <= \"2025-12-30T00:00:00.000Z\" | WHERE geoip_client.country_name IN (\"Taiwan\",\"United States\",\"Hong Kong\",\"The Netherlands\",\"France\") | STATS cnt = COUNT(*) BY geoip_client.country_name | SORT cnt DESC | LIMIT 5 | EVAL previousCountry = geoip_client.country_name | DROP geoip_client.country_name"
     }
   }
 }
@@ -1137,9 +1137,9 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
 
 - 先取得 currentCountry 後 再回填到 previousCountry 查詢的 IN 中
 
-- country.geoip.geo.country_name = currentCountry.currentCountry
+- country.geoip_client.country_name = currentCountry.currentCountry
 
-- 依 country.geoip.geo.country_name 名稱 各別計算： country.change = pctChange(currentCountry.cnt, previousCountry.cnt)
+- 依 country.geoip_client.country_name 名稱 各別計算： country.change = pctChange(currentCountry.cnt, previousCountry.cnt)
 
 - country.cnt = currentCountry.cnt
 
@@ -1253,7 +1253,7 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
 ### country item fields
 | Attribute              | Type   | Description |
 |-----------------------|--------|-------------|
-| geoip.geo.country_name | String | 國家名稱 |
+| geoip_client.country_name | String | 國家名稱 |
 | cnt                   | Number | 當期請求次數 |
 | change                | Number | 變化（百分比變化，%） |
 
@@ -1596,27 +1596,27 @@ visits.change = pctChange(currentVisits.currentVisits, previousVisits.previousVi
   ],
   "country": [
     {
-      "geoip.geo.country_name": "Taiwan",
+      "geoip_client.country_name": "Taiwan",
       "cnt": 784860,
       "change": -1.92
     },
     {
-      "geoip.geo.country_name": "United States",
+      "geoip_client.country_name": "United States",
       "cnt": 335437,
       "change": -2.01
     },
     {
-      "geoip.geo.country_name": "Hong Kong",
+      "geoip_client.country_name": "Hong Kong",
       "cnt": 166231,
       "change": -2.09
     },
     {
-      "geoip.geo.country_name": "The Netherlands",
+      "geoip_client.country_name": "The Netherlands",
       "cnt": 73526,
       "change": -1.77
     },
     {
-      "geoip.geo.country_name": "France",
+      "geoip_client.country_name": "France",
       "cnt": 50562,
       "change": 0.31
     }
