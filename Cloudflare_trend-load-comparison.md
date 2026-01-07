@@ -97,7 +97,6 @@
 | --------- | ------ | -------- | ----------- |
 | quantity  | String | Y        | 頁面瀏覽次數（含單位）    |
 | change    | Number | Y        | 瀏覽比例變化(點閱率)      |
-               |
 
 ### visits fields
 
