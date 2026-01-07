@@ -154,7 +154,7 @@
 | Attribute              | Type   | Required | Description |
 | ---------------------- | ------ | -------- | ----------- |
 | trendAnalysis          | String | Y        | 分析報告內容 |
-| metadata               | String | Y        | 分析資訊    |
+| metadata               | Object | Y        | 分析資訊    |
 
 ### metadata item fields
 
@@ -166,8 +166,8 @@
 | aiProvider             | String | Y        | 提供模型推論能力的實際執行平台 |
 | isAIGenerated          | String | Y        | 是否為 AI 自動生成結果的標記 |
 | analysisType           | String | Y        | 本次分析任務的業務語義分類    |
-| responseTime           | String | Y        | AI 完整產生回應所耗費的時間（毫秒） |
-| promptLength           | String | Y        | 送入模型的 Prompt 長度指標 |
+| responseTime           | Number | Y        | AI 完整產生回應所耗費的時間（毫秒） |
+| promptLength           | Number | Y        | 送入模型的 Prompt 長度指標 |
 
 ### Example Response
 ```json
