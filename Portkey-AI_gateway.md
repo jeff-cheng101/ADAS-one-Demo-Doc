@@ -119,3 +119,104 @@ Portkey AI Gateway 的 **開源版本** （Open Source）與 **付費版本** �
 --------------------------------------------------------------------------------
 
  **比喻說明：**    **開源版** 就像是提供你一組 **強大的引擎與方向盤** （核心路由與可靠性），讓你能自己組裝出一台性能極佳的賽車。而 **雲端版與企業版** 則是在賽車基礎上加裝了 **全自動巡航系統** （供應商優化）、 **高科技防盜鎖與裝甲** （PII 脫敏與安全合規），並附帶一組 **專業維修車隊** （24/7 支援），讓你在企業級的商業賽道上跑得既安全又高效。
+
+---
+
+## 評估及分析可行性。
+- 希望將 https://github.com/Portkey-AI/gateway 功能 合進至 https://github.com/jeff-cheng101/Across-AI 中。
+
+### 安裝方法
+
+### A. Docker（最直接）
+
+- 以官方 Docker image 啟動（預設對外埠 8787） [hub.docker.com](https://hub.docker.com/r/portkeyai/gateway?utm_source=chatgpt.com)
+
+    - `docker run -d -p 8787:8787 portkeyai/gateway:latest`
+    - `docker run --rm -p 8787:8787 portkeyai/gateway:latest`
+
+### B. Docker Compose
+
+- 下載 repo 的 compose 檔並啟動 [hub.docker.com](https://hub.docker.com/r/portkeyai/gateway?utm_source=chatgpt.com)
+
+    - `wget "https://raw.githubusercontent.com/Portkey-AI/gateway/main/docker-compose.yaml"`
+    - `docker compose up -d`
+
+### C. NPM 套件（作為程式內依賴/SDK 或 gateway 套件形態）
+
+- NPM 上存在 `@portkey-ai/gateway`，顯示可用於專案依賴；版本資訊與 OpenAI 相容性在頁面可查。
+
+### WebUI
+
+- http://localhost:8787/public/
+
+---
+
+### 測試範例
+
+- test request
+  
+```json
+curl -X POST \
+      http://localhost:8787/v1/chat/completions \
+      -H "Content-Type: application/json" \
+      -H "x-portkey-provider: [Click to edit]" \
+      -H "Authorization: [Click to edit]" \
+      -d '{
+        "messages": [
+            { "role": "user", "content": "Hello, how are you?" }
+        ],
+        "model": """"
+      }'
+```
+
+- 內容範例
+
+```json
+{
+    "messages": [
+        { 
+            "role": "user", 
+            "content": "Hello, how are you?" 
+        }
+    ],
+    "model": "gemini-2.5-flash"
+}
+```
+
+- Response
+
+```json
+{
+    "id": "portkey-644d57db-5a07-434d-8c93-14235d1f0e41",
+    "object": "chat.completion",
+    "created": 1767843275,
+    "model": "gemini-2.5-flash",
+    "provider": "google",
+    "choices": [
+        {
+            "message": {
+                "role": "assistant",
+                "content": "Hello! As an AI, I don't have feelings in the way humans do, but I'm functioning perfectly and ready to assist you.\n\nHow are you doing today?"
+            },
+            "index": 0,
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "prompt_tokens": 7,
+        "completion_tokens": 37,
+        "total_tokens": 190,
+        "completion_tokens_details": {
+            "reasoning_tokens": 146,
+            "audio_tokens": 0
+        },
+        "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+        }
+    }
+}
+```
+
+- 針測log紀錄
+![圖](./GateWay_01.png)
