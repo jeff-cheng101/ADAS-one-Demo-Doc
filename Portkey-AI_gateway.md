@@ -220,3 +220,116 @@ curl -X POST \
 
 - 針測log紀錄
 ![圖](./GateWay_01.png)
+
+---
+
+## 2026/01/08 實驗
+
+https://github.com/jeff-cheng101/Across-AI/tree/feature/AI-GateWay
+
+### Planner Response
+
+以下是本次修改的詳細說明以及設定啟動步驟：
+
+### 📝 修改內容解譯
+
+1.  **新增 [backend/docker-compose.yml](cci:7://file:///c:/work/TW/Across-AI/backend/docker-compose.yml:0:0-0:0)**
+    *   這是用來在本地啟動 **Portkey AI Gateway** 的設定檔。
+    *   它會下載並執行 `portkeyai/gateway:latest` 映像檔，並將服務開啟在 `8787` port。
+
+2.  **修改 [backend/.env.example](cci:7://file:///c:/work/TW/Across-AI/backend/.env.example:0:0-0:0)**
+    *   新增了 Portkey 相關的環境變數設定範本，包含開關 (`USE_PORTKEY`)、Gateway 網址以及 Ollama 的連線位置。
+
+3.  **修改 [backend/services/trendAnalysisService.js](cci:7://file:///c:/work/TW/Across-AI/backend/services/trendAnalysisService.js:0:0-0:0)**
+    *   在 [performAIAnalysis](cci:1://file:///c:/work/TW/Across-AI/backend/services/trendAnalysisService.js:1128:2-1299:3) 函式中加入判斷邏輯。
+    *   如果 `USE_PORTKEY=true`，程式會將 AI 請求網址 (Base URL) 改為指向 Portkey Gateway。
+    *   自動注入 Portkey 所需的 Headers (如 `x-portkey-provider`, `x-portkey-custom-host`)，讓 Gateway 知道要將請求轉發給 Gemini 還是本地的 Ollama。
+
+---
+
+### ⚙️ 專案設定與啟動步驟
+
+請依照以下步驟啟用 Portkey Gateway 功能：
+
+#### 1. 啟動 Portkey Gateway (Docker)
+
+請在 `backend` 資料夾下開啟終端機，執行：
+
+```bash
+docker-compose up -d
+```
+
+這會以後台模式啟動 Portkey Gateway。你可以透過瀏覽器訪問 `http://localhost:8787/v1/health` 確認它是否正常運作。
+
+#### 2. 設定環境變數 (.env)
+
+請打開你的 [backend/.env](cci:7://file:///c:/work/TW/Across-AI/backend/.env:0:0-0:0) 檔案，並在最後面加入以下設定：
+
+```properties
+# Portkey Gateway 設定
+USE_PORTKEY=true
+PORTKEY_GATEWAY_URL=http://localhost:8787/v1
+# 讓 Docker 內的 Portkey 能連到你主機上的 Ollama
+PORTKEY_OLLAMA_HOST=http://host.docker.internal:11434
+```
+
+> **注意**：`host.docker.internal` 是讓 Docker 容器連線回主機 (Host) 的特殊網址，適用於 Windows 和 Mac。
+
+#### 3. 重啟後端服務
+
+修改完 [.env](cci:7://file:///c:/work/TW/Across-AI/backend/.env:0:0-0:0) 後，請重新啟動你的後端伺服器 (例如 run `npm run dev` 或 `node index.js`)，讓新的環境變數生效。
+
+#### 4. 驗證
+
+當你觸發 AI 分析功能時：
+- **後端 Log** 會顯示：`API URL: http://localhost:8787/v1 (via Portkey Gateway)`。
+- **Portkey Log** (可用 `docker-compose logs -f` 查看) 會顯示請求已進入 Gateway 並轉發。
+
+這樣就完成了！之後所有的 AI 請求都會經過 Portkey，你可以在 Gateway 上進行監控與紀錄。
+
+## 如果是發給 dify 所發佈的 api 接口，gateway 一樣呢抓到並紀錄嗎？
+
+### Planner Response
+
+Portkey 支援透過 **OpenAI-Compatible** 的方式來代理任何相容 OpenAI 介面的服務，而 **Dify** 剛好支援 OpenAI 相容的 API 輸出。
+
+因此，**可以**透過 Gateway 偵測及紀錄發給 Dify 的請求。
+
+### 如何設定
+
+要在 Portkey 紀錄 Dify 的請求，原理就像我們剛剛設定 Ollama 一樣，把 Dify 當作一個「自定義的 OpenAI Provider」。
+
+#### 1. 確認 Dify API 資訊
+你需要準備好 Dify 的 API URL 和 API Key：
+*   **Dify Base URL**: 通常是 `http://<dify-host>/v1` (請確認 Dify 有開啟 OpenAI 相容介面)
+*   **Dify API Key**: 你的 Dify App API Key
+
+#### 2. 程式碼修改範例
+在你的程式碼中，設定 Headers 讓 Portkey 知道要把請求轉發給 Dify：
+
+```javascript
+// 在你的 trendAnalysisService.js 或其他呼叫點
+
+const usePortkey = process.env.USE_PORTKEY === 'true';
+// Dify 的位址 (若在 Docker 內互連請用 host.docker.internal 或真實 IP)
+const difyUrl = 'http://host.docker.internal:5001/v1'; 
+
+const completion = await openai.chat.completions.create({
+  model: 'your-dify-model-name', // Dify 上對應的模型名稱
+  messages: messages,
+}, {
+  // 透過 Portkey Gateway
+  baseURL: usePortkey ? 'http://localhost:8787/v1' : difyUrl,
+  headers: usePortkey ? {
+    'x-portkey-provider': 'openai', // 這裡 trick 是用 'openai' 或 'custom'
+    'x-portkey-custom-host': difyUrl, // 告訴 Gateway 轉發目標是 Dify
+    'Authorization': `Bearer ${difyApiKey}` // 你的 Dify Key
+  } : {}
+});
+```
+
+### 關鍵點
+*   **`x-portkey-custom-host`**: 這是關鍵 Header，告訴 Portkey 不要去連真的 OpenAI，而是連到你指定的 Dify URL。
+*   **介面相容性**: 只要 Dify 的回應格式符合 OpenAI Chat Completion 格式 (大部分都符合)，Portkey 就能成功解析並在 Dashboard 上顯示 token 數、耗時和完整內容。
+
+這樣一來，你的後端不管是發給 **Gemini**、**Ollama** 還是 **Dify**，全部都能在 Portkey 的統一介面上看到紀錄！
