@@ -6,6 +6,8 @@
 - https://drive.google.com/file/d/11X2SbmKVwGkPHudrbkVKHC9FN4xuSL7a/view?usp=sharing
 - https://codewiki.google/github.com/portkey-ai/gateway#ai-gateway-core-functionality
 
+- https://github.com/helicone/helicone
+
 
 ## 開源版和付費版本的差異
 
