@@ -291,6 +291,8 @@ volumes:
 
 ### 4.6.1 `prometheus.yml`
 
+`C:\work\TW\litellm\prometheus\prometheus.yml`
+
 ```yaml
 global:
   scrape_interval: 15s
