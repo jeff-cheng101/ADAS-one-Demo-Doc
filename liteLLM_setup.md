@@ -118,17 +118,17 @@ New-Item prometheus\prometheus.yml -ItemType File -Force | Out-Null
 LITELLM_MASTER_KEY="sk-admin-secret-key-CHANGE-THIS"
 LITELLM_SALT_KEY="sk-salt-secret-DO-NOT-ROTATE"
 
-POSTGRES_USER=llmproxy
-POSTGRES_PASSWORD=secure_db_password
-POSTGRES_DB=litellm
-DATABASE_URL="postgresql://llmproxy:secure_db_password@db:5432/litellm"
+# POSTGRES_USER=llmproxy
+# POSTGRES_PASSWORD=secure_db_password_CHANGE_THIS
+# POSTGRES_DB=litellm
+# DATABASE_URL="postgresql://llmproxy:secure_db_password_CHANGE_THIS@db:5432/litellm"
 
-REDIS_HOST=redis
-REDIS_PORT=6379
-REDIS_PASSWORD=secure_redis_password
+# REDIS_HOST=redis
+# REDIS_PORT=6379
+# REDIS_PASSWORD=secure_redis_password_CHANGE_THIS
 
-OPENAI_API_KEY="CHANGE_THIS"
-AZURE_API_KEY="CHANGE_THIS" 
+# OPENAI_API_KEY="CHANGE_THIS"
+# AZURE_API_KEY="CHANGE_THIS"
 ```
 
  **重要限制**
@@ -180,7 +180,7 @@ events { worker_connections 1024; }
 
 http {
   upstream litellm_backend {
-    server litellm:4000;
+    server litellm:4001;
   }
 
   server {
@@ -188,9 +188,14 @@ http {
 
     location / {
       proxy_pass http://litellm_backend;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+
       proxy_buffering off;
+      proxy_cache off;
       proxy_http_version 1.1;
       proxy_set_header Connection "";
+      chunked_transfer_encoding on;
     }
   }
 }
@@ -202,47 +207,90 @@ http {
 ### 4.6 `docker-compose.yml`
 
 ```yaml
-version: "3.8"
-
 services:
-  db:
-    image: postgres:16-alpine
-    volumes:
-      - ./pg_data:/var/lib/postgresql/data
-    env_file: .env
-
-  redis:
-    image: redis:7-alpine
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
-    volumes:
-      - ./redis_data:/data
-
   litellm:
-    image: ghcr.io/berriai/litellm:main-stable
-    volumes:
-      - ./config.yaml:/app/config.yaml:ro
-    env_file: .env
-    command:
-      - "--config"
-      - "/app/config.yaml"
-      - "--port"
-      - "4000"
-      - "--num_workers"
-      - "4"
+    build:
+      context: .
+      args:
+        target: runtime
+    image: docker.litellm.ai/berriai/litellm:main-stable
+    #########################################
+    ## Uncomment these lines to start proxy with a config.yaml file ##
+    # volumes:
+    #  - ./config.yaml:/app/config.yaml
+    # command:
+    #  - "--config=/app/config.yaml"
+    ##############################################
     ports:
-      - "4000:4000"
+      - "4001:4000" # Map the container port to the host, change the host port if necessary
+    environment:
+      DATABASE_URL: "postgresql://llmproxy:dbpassword9090@db:5432/litellm"
+      STORE_MODEL_IN_DB: "True" # allows adding models to proxy via UI
+    env_file:
+      - .env # Load local .env file
     depends_on:
-      - db
-      - redis
+      - db  # Indicates that this service depends on the 'db' service, ensuring 'db' starts first
+    healthcheck:  # Defines the health check configuration for the container
+      test:
+        - CMD-SHELL
+        - python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:4001/health/liveliness')"  # Command to execute for health check
+      interval: 30s  # Perform health check every 30 seconds
+      timeout: 10s   # Health check command times out after 10 seconds
+      retries: 20    # Retry up to 3 times if health check fails
+      start_period: 60s  # Wait 40 seconds after container start before beginning health checks
 
-  nginx:
-    image: nginx:alpine
+  db:
+    image: postgres:16
+    restart: always
+    container_name: litellm_db
+    environment:
+      POSTGRES_DB: litellm
+      POSTGRES_USER: llmproxy
+      POSTGRES_PASSWORD: dbpassword9090
     ports:
-      - "80:80"
+      - "5432:5432"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - litellm 
+      - postgres_data:/var/lib/postgresql/data # Persists Postgres data across container restarts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d litellm -U llmproxy"]
+      interval: 1s
+      timeout: 5s
+      retries: 30
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - prometheus_data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+    restart: always
+
+volumes:
+  prometheus_data:
+    driver: local
+  postgres_data:
+    name: litellm_postgres_data # Named volume for Postgres data persistence
+
+```
+
+* * * * *
+
+### 4.6.1 `prometheus.yml`
+
+```yaml
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "litellm"
+    static_configs:
+      - targets: ["litellm:4001"]
+
 ```
 
 * * * * *
