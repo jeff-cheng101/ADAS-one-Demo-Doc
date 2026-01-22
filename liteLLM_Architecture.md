@@ -2073,3 +2073,390 @@ LiteLLM 是一個成熟且功能完整的開源專案，為開發者和企業提
 - 建構內部 LLM API 網關
 - 需要負載均衡和備援的生產環境
 - 需要詳細使用追蹤和成本控制的場景
+
+---
+
+# LiteLLM 資料庫結構變更與 API 兼容性
+_Exported on 1/22/2026 at 20:32:34 GMT+8 from Cursor (2.3.41)_
+
+---
+
+**User**
+
+幫我研究及澄清 liteLLM 專案，這是關於 liteLLM backend api 與 database 之前的問題：
+當 database 需要新增 columns 及 table 時其 api 接口是否必須配合異動
+我想知道關於這個問題，列出幾種方式是可以滿足解決這個問題。
+
+背景：
+liteLLM 是一個開源的專案，希望在不異動 liteLLM 的之前下, 滿足 Ateam 專案可以使用 liteLLM 的 backend api 及 database . 
+
+
+---
+
+**Cursor**
+
+先給結論：**新增 columns 或 tables 不一定需要改 API**。只要 LiteLLM 的後端 API **沒有讀寫那些新欄位/新表**，而且不影響既有表欄位的結構與約束（例如改成 NOT NULL、改型別、改欄位名），通常不需要更動 LiteLLM 的 API。LiteLLM 的 API 主要透過 Prisma schema 與對應的 Pydantic response model 來定義可讀寫與回傳的欄位，所以「新增不被使用的欄位/表」一般不會影響 API 行為或回傳格式。  
+參考：資料庫 schema 來源與管理（`schema.prisma`、`db_info.md`），以及 API 端點使用 Prisma 讀資料與 response_model 的例子如下。
+
+```1:24:docs/my-website/docs/proxy/db_info.md
+# What is stored in the DB
+...
+## Link to DB Schema
+You can see the full DB Schema [here](https://github.com/BerriAI/litellm/blob/main/schema.prisma)
+...
+```
+
+```315:365:litellm/proxy/management_endpoints/customer_endpoints.py
+@router.get(
+    "/customer/info",
+    tags=["Customer Management"],
+    dependencies=[Depends(user_api_key_auth)],
+    response_model=LiteLLM_EndUserTable,
+)
+...
+        user_info = await prisma_client.db.litellm_endusertable.find_first(
+            where={"user_id": end_user_id}, include={"litellm_budget_table": True}
+        )
+...
+        return user_info.model_dump(exclude_none=True)
+```
+
+```2454:2468:litellm/proxy/_types.py
+class LiteLLM_EndUserTable(LiteLLMPydanticObjectBase):
+    user_id: str
+    blocked: bool
+    alias: Optional[str] = None
+    spend: float = 0.0
+    allowed_model_region: Optional[AllowedModelRegion] = None
+    default_model: Optional[str] = None
+    litellm_budget_table: Optional[LiteLLM_BudgetTable] = None
+```
+
+---
+
+## 你要的「不改 LiteLLM」前提下可行方式（列舉多種）
+
+### 方式 1：**新增「獨立表」或「獨立 schema」**
+- 在同一個 DB 內建立 **新表**（或新 schema）存放 Ateam 需求資料。
+- LiteLLM 不會讀寫這些表，因此 API 不需改。
+- **建議用獨立 schema**（例如 `ateam`），避免 LiteLLM 的 Prisma 管理流程誤觸你的自訂表。
+
+### 方式 2：**使用現有表中的 JSON 欄位擴充**
+- LiteLLM 多數表已含 `Json` 欄位（例如 `litellm_params`, `model_info`, `metadata` 類型）。
+- 你可把 Ateam 需要的擴充資訊放進這些 JSON 欄位。
+- API 不變，因為欄位已存在；只要你不要求 LiteLLM 回傳新結構即可。
+
+### 方式 3：**建立資料庫 View / Materialized View**
+- 用 View 將 LiteLLM 的表與你自建表關聯起來。
+- LiteLLM 仍只用原表；Ateam 端用 View 查詢。
+- 不需更動 LiteLLM 的 API 或 code。
+
+### 方式 4：**外掛服務（Wrapper API）**
+- 你建立一個「Ateam 專用 API」：
+  - 寫你自訂表
+  - 呼叫 LiteLLM 的 API 取得 LLM 功能
+- LiteLLM 原 API 不改。
+
+### 方式 5：**DB trigger/自動同步**
+- 若你需要新增欄位但不想改 LiteLLM API：
+  - 用 trigger 在 insert/update 時自動補值
+  - 或把你要的資料同步到自建表
+- LiteLLM 不知情、不需改動。
+
+---
+
+## 風險與注意事項（很關鍵）
+
+### 1) Prisma 自動更新可能影響你自建表
+LiteLLM proxy 啟動時可能使用 `prisma db push --accept-data-loss` 同步 schema。若你把自訂表建在 LiteLLM 使用的 **同一 schema**，有機會被 Prisma 認為「不在 schema 中」而被移除。
+
+```388:392:litellm/proxy/db/prisma_client.py
+subprocess.run(
+    ["prisma", "db", "push", "--accept-data-loss"],
+    timeout=60,
+    check=True,
+)
+```
+
+**避免方式**  
+- 用獨立 schema  
+- 或在部署環境關閉 schema 自動更新  
+- 或確保 Prisma 管理範圍不包含你的表
+
+### 2) 變更既有欄位型別、NOT NULL、欄位名稱
+這類變更 **通常會破壞 LiteLLM 行為**，API 也可能需要調整。  
+**在不改 LiteLLM 的前提下，請避免動到既有欄位的結構**。
+
+---
+
+## 結論整理（針對你的問題）
+
+**當 DB 需要新增 columns / tables 時，API 是否一定要配合變更？**  
+不一定。  
+只要新增內容不影響 LiteLLM 既有 schema 或 API 回傳模型、且 LiteLLM 不讀寫該欄位/表，API 通常不需改。
+
+---
+
+如果你願意提供：  
+- 你想新增的欄位/表是什麼  
+- 你希望 Ateam 如何使用（讀、寫、查詢）  
+我可以幫你挑最安全的方案，並確認是否會被 Prisma 影響。
+
+```plaintext
+# What is stored in the DB
+...
+## Link to DB Schema
+You can see the full DB Schema [here](https://github.com/BerriAI/litellm/blob/main/schema.prisma)
+...
+```
+
+```python
+@router.get(
+    "/customer/info",
+    tags=["Customer Management"],
+    dependencies=[Depends(user_api_key_auth)],
+    response_model=LiteLLM_EndUserTable,
+)
+...
+        user_info = await prisma_client.db.litellm_endusertable.find_first(
+            where={"user_id": end_user_id}, include={"litellm_budget_table": True}
+        )
+...
+        return user_info.model_dump(exclude_none=True)
+```
+
+```python
+class LiteLLM_EndUserTable(LiteLLMPydanticObjectBase):
+    user_id: str
+    blocked: bool
+    alias: Optional[str] = None
+    spend: float = 0.0
+    allowed_model_region: Optional[AllowedModelRegion] = None
+    default_model: Optional[str] = None
+    litellm_budget_table: Optional[LiteLLM_BudgetTable] = None
+```
+
+```python
+subprocess.run(
+    ["prisma", "db", "push", "--accept-data-loss"],
+    timeout=60,
+    check=True,
+)
+```
+
+---
+
+**User**
+
+詳細解譯 Prisma 自動更新 功能的部份
+
+---
+
+**Cursor**
+
+以下是 LiteLLM 中 **Prisma 自動更新（schema 自動同步）** 的詳細解譯，含實際流程與風險點，並附上程式碼位置讓你對照。
+
+---
+
+## Prisma 自動更新在 LiteLLM 的實際流程
+
+**啟動 proxy 時會走這段流程：**
+- 如果有設定 `DATABASE_URL`（或 `DIRECT_URL`），且系統能找到 `prisma` CLI
+- 會根據設定決定「更新 DB schema」還是「只做差異檢查」
+  
+```785:800:litellm/proxy/proxy_cli.py
+if is_prisma_runnable:
+    from litellm.proxy.db.check_migration import check_prisma_schema_diff
+    from litellm.proxy.db.prisma_client import (
+        PrismaManager,
+        should_update_prisma_schema,
+    )
+
+    if (
+        should_update_prisma_schema(
+            general_settings.get("disable_prisma_schema_update")
+        )
+        is False
+    ):
+        check_prisma_schema_diff(db_url=None)
+    else:
+        PrismaManager.setup_database(use_migrate=not use_prisma_db_push)
+```
+
+### 解讀重點
+- `disable_prisma_schema_update = true`  
+  → **不自動更新 DB**，只做 schema 差異檢查  
+- `disable_prisma_schema_update = false`  
+  → **會嘗試自動更新 DB schema**
+
+---
+
+## 「自動更新」到底做了什麼？
+
+當允許自動更新時，LiteLLM 會呼叫 `PrismaManager.setup_database()`：
+
+```362:394:litellm/proxy/db/prisma_client.py
+def setup_database(use_migrate: bool = False) -> bool:
+    ...
+    if use_migrate:
+        ...
+        return ProxyExtrasDBManager.setup_database(use_migrate=use_migrate)
+    else:
+        # Use prisma db push with increased timeout
+        subprocess.run(
+            ["prisma", "db", "push", "--accept-data-loss"],
+            timeout=60,
+            check=True,
+        )
+        return True
+```
+
+### 解讀重點
+- 預設使用 **`prisma db push --accept-data-loss`**
+  - 這會直接「把 `schema.prisma` 強制套用到 DB」
+  - `--accept-data-loss` 表示 **允許刪欄位、刪表**（有資料遺失風險）
+- `use_migrate=True` 則會走 migration 流程（只在特定情境或 extras）
+
+---
+
+## 自動更新的「開關」是什麼？
+
+### 1) config 設定值
+```259:259:docs/my-website/docs/proxy/config_settings.md
+| disable_prisma_schema_update | boolean | If true, turns off automatic schema updates to DB |
+```
+
+### 2) 環境變數
+`should_update_prisma_schema()` 會讀 `DISABLE_SCHEMA_UPDATE`（若沒從 config 傳入）
+
+```414:438:litellm/proxy/db/prisma_client.py
+def should_update_prisma_schema(
+    disable_updates: Optional[Union[bool, str]] = None,
+) -> bool:
+    if disable_updates is None:
+        disable_updates = os.getenv("DISABLE_SCHEMA_UPDATE", "false")
+
+    if isinstance(disable_updates, str):
+        disable_updates = str_to_bool(disable_updates)
+
+    return not bool(disable_updates)
+```
+
+---
+
+## 重要風險點（與你前面問題高度相關）
+
+1) **若你在同一 schema 建自訂表**
+- `prisma db push --accept-data-loss` 可能把它當作「不在 schema 的表」而刪掉。
+
+2) **欄位型別/名稱/NOT NULL 變更**
+- 即使你沒改 LiteLLM API，這種 schema 變動仍可能破壞 LiteLLM 行為。
+
+---
+
+## 給你的簡短建議（符合你「不改 LiteLLM」需求）
+
+- **最穩定作法**：自建表放在 **另一個 schema**
+- 在 LiteLLM config 中設定 `disable_prisma_schema_update: true`
+- 或用環境變數 `DISABLE_SCHEMA_UPDATE=true` 來完全停止自動改 DB
+
+---
+
+如果你願意，我可以再幫你：
+- 針對你的 DB 變更需求判斷是否會被 Prisma 影響  
+- 或出一份「安全 schema 佈署與權限隔離」的做法清單
+
+```python
+if is_prisma_runnable:
+    from litellm.proxy.db.check_migration import check_prisma_schema_diff
+    from litellm.proxy.db.prisma_client import (
+        PrismaManager,
+        should_update_prisma_schema,
+    )
+
+    if (
+        should_update_prisma_schema(
+            general_settings.get("disable_prisma_schema_update")
+        )
+        is False
+    ):
+        check_prisma_schema_diff(db_url=None)
+    else:
+        PrismaManager.setup_database(use_migrate=not use_prisma_db_push)
+```
+
+```python
+def setup_database(use_migrate: bool = False) -> bool:
+    ...
+    if use_migrate:
+        ...
+        return ProxyExtrasDBManager.setup_database(use_migrate=use_migrate)
+    else:
+        # Use prisma db push with increased timeout
+        subprocess.run(
+            ["prisma", "db", "push", "--accept-data-loss"],
+            timeout=60,
+            check=True,
+        )
+        return True
+```
+
+```plaintext
+| disable_prisma_schema_update | boolean | If true, turns off automatic schema updates to DB |
+```
+
+```python
+def should_update_prisma_schema(
+    disable_updates: Optional[Union[bool, str]] = None,
+) -> bool:
+    if disable_updates is None:
+        disable_updates = os.getenv("DISABLE_SCHEMA_UPDATE", "false")
+
+    if isinstance(disable_updates, str):
+        disable_updates = str_to_bool(disable_updates)
+
+    return not bool(disable_updates)
+```
+
+---
+
+**User**
+
+分析目前環境設定，如果不希望啟動Prisma 自動更新功能，請提供建議該如何調整？調整那個檔案？
+
+---
+
+**Cursor**
+
+我檢查了目前專案根目錄的設定檔，`proxy_config.yaml` 只有 `general_settings.master_key`，**尚未關閉 Prisma 自動更新**。要關閉有兩種做法，優先建議改設定檔。
+
+## 建議調整（改檔案）
+請在專案根目錄的 `proxy_config.yaml` 加上 `disable_prisma_schema_update: true`：
+
+```yaml
+general_settings:
+  master_key: sk-1234
+  disable_prisma_schema_update: true
+```
+
+- 檔案位置：`proxy_config.yaml`
+
+這會讓啟動時 **不自動執行 Prisma schema 更新**，只做差異檢查。
+
+---
+
+## 替代做法（環境變數）
+若不想動設定檔，可設定環境變數：
+
+- `DISABLE_SCHEMA_UPDATE=true`
+
+---
+
+若你實際啟動 proxy 時使用的是**自訂設定檔**（例如 `--config some.yaml`），就需要在那個檔案的 `general_settings` 加上同樣的設定。你如果提供實際啟動命令，我可以直接幫你確認應該改哪一個檔案。
+
+```yaml
+general_settings:
+  master_key: sk-1234
+  disable_prisma_schema_update: true
+```
+
