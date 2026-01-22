@@ -206,6 +206,15 @@ http {
 
 ### 4.6 `docker-compose.yml`
 
+- 取得官方 compose 檔
+
+```bash
+curl -O https://raw.githubusercontent.com/BerriAI/litellm/main/docker-compose.yml
+```
+
+
+- 調整內容
+
 ```yaml
 services:
   litellm:
