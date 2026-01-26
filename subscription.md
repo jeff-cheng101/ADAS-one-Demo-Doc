@@ -28,19 +28,30 @@ Gateway Subscription API 提供訂閱清單資料的讀取功能，資料來源�
 [
   {
     "ai_name": "GPT Plus",
-    "price": 20.00,
+    "price": 20,
     "duration": 1,
     "subscribe_time": "2025-01-01 10:00:00",
     "currency_code": "USD",
-    "create_time": "2025-01-01 10:00:00"
+    "create_time": "2025-01-01 10:00:00",
+    "update_time": ""
   },
   {
     "ai_name": "Cursor Pro",
-    "price": 20.00,
+    "price": 20,
     "duration": 1,
     "subscribe_time": "2025-01-05 11:00:00",
     "currency_code": "USD",
-    "create_time": "2025-01-05 11:00:00"
+    "create_time": "2025-01-05 11:00:00",
+    "update_time": ""
+  },
+  {
+    "ai_name": "Gemini Advanced",
+    "price": 19.99,
+    "duration": 1,
+    "subscribe_time": "2025-01-12 08:45:00",
+    "currency_code": "USD",
+    "create_time": "2025-01-12 08:45:00",
+    "update_time": ""
   }
 ]
 ```
@@ -55,6 +66,7 @@ Gateway Subscription API 提供訂閱清單資料的讀取功能，資料來源�
 | `subscribe_time` | string | 訂閱時間（格式：`YYYY-MM-DD HH:mm:ss`） |
 | `currency_code` | string | 貨幣代碼（如 `USD`） |
 | `create_time` | string | 建立時間（格式：`YYYY-MM-DD HH:mm:ss`） |
+| `update_time` | string | 更新時間（格式：`YYYY-MM-DD HH:mm:ss`） |
 
 #### 錯誤回應
 
