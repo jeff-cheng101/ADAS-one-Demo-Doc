@@ -129,6 +129,9 @@ LITELLM_SALT_KEY="sk-salt-secret-DO-NOT-ROTATE"
 
 # OPENAI_API_KEY="CHANGE_THIS"
 # AZURE_API_KEY="CHANGE_THIS"
+
+# DISABLE_SCHEMA_UPDATE 用來關閉 LiteLLM 啟動時自動執行 Prisma schema migration 的行為。
+DISABLE_SCHEMA_UPDATES="true"
 ```
 
  **重要限制**
@@ -284,6 +287,7 @@ volumes:
     driver: local
   postgres_data:
     name: litellm_postgres_data # Named volume for Postgres data persistence
+    external: true # litellm_pgdata 用 external: true，讓它不受 compose project 生命週期影響（即使 down -v 也不會被這個專案刪掉，除非你手動 docker volume rm）。
 
 ```
 
