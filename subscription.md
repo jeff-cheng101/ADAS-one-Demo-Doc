@@ -127,6 +127,48 @@ console.log(data);
 
 ---
 
+## 更新訂閱清單
+
+### PUT /api/gateway/subscription
+
+更新訂閱清單資料。
+
+### 更新訂閱清單說明
+- Method: `PUT`
+- Path: `/api/gateway/subscription`
+- Request Body: `SubscriptionItem[]`
+- 成功回應: `200`
+  - Body: `{ "success": true, "data": SubscriptionItem[] }`
+- 時間欄位規則:
+  - 第一次更新: `create_time` 與 `update_time` 皆由伺服器設定為當下時間
+  - 第二次起: `create_time` 保持不變，`update_time` 由伺服器更新為當下時間
+- 失敗回應:
+  - `400` `{ "error": "請提供陣列格式的訂閱資料" }`
+  - `400` `{ "error": "第 X 筆: ...驗證錯誤訊息..." }`
+  - `500` `{ "error": "subscription.json 不存在" }`
+  - `500` `{ "error": "更新 subscription.json 失敗", "details": "..." }`
+
+```json
+[
+  {
+    "ai_name": "GPT Plus",
+    "price": 20.2,
+    "duration": 1,
+    "subscribe_time": "2025-01-01 10:00:00",
+    "currency_code": "USD"
+  },
+  {
+    "ai_name": "Cursor Pro",
+    "price": 20.1,
+    "duration": 1,
+    "subscribe_time": "2025-01-05 11:00:00",
+    "currency_code": "USD"
+  }
+]
+```
+
+---
+
 ## 資料來源
 
 訂閱清單資料儲存於 `backend/data/subscription.json`，如需修改訂閱資料，請直接編輯該檔案。
